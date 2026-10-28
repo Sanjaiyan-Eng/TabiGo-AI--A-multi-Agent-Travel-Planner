@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TabiGo AI - a multi-agent travel planner built with LangGraph, Groq, PostgreSQL, Tavily and AviationStack.">
+    <title>TabiGo AI — Multi-Agent Travel Planner</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <!-- Animated background -->
+    <canvas id="bgCanvas" aria-hidden="true"></canvas>
+    <div class="page-bg" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- NAVBAR -->
+    <header class="nav">
+        <a href="#top" class="logo">
+            <span class="logo-mark">旅</span>
+            <span class="logo-text">TabiGo<span class="logo-ai">AI</span></span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="#planner">Planner</a>
+            <a href="#agents">Agents</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#history">History</a>
+        </nav>
+
+        <div class="nav-actions">
+            <div class="status-pill"><span class="status-dot"></span>Agents online</div>
+            <button class="icon-btn" id="themeToggle" aria-label="Toggle theme" title="Toggle theme">🌙</button>
+        </div>
+    </header>
+
+    <main class="app-container" id="top">
+
+        <!-- HERO -->
+        <section class="hero-section">
+            <div class="badge reveal">
+                <span class="badge-dot"></span>
+                A Multi-Agent Travel Planner · Powered by LangGraph
+            </div>
+
+            <h1 class="reveal">
+                Plan your perfect trip with
+                <span class="gradient-text" id="typedWord">multi-agent AI</span><span class="caret">|</span>
+            </h1>
+
+            <p class="hero-sub reveal">
+                TabiGo orchestrates four specialised AI agents to search live flights, compare hotels,
+                design a day-wise itinerary and deliver one polished travel plan — in seconds.
+            </p>
+
+            <div class="hero-cta reveal">
+                <a href="#planner" class="btn-primary">Start planning <span>→</span></a>
+                <a href="#architecture" class="btn-ghost">See how it works</a>
+            </div>
+
+            <div class="stats reveal">
+                <div class="stat"><b data-count="4">0</b><span>Specialised agents</span></div>
+                <div class="stat"><b data-count="5">0</b><span>Live APIs &amp; tools</span></div>
+                <div class="stat"><b data-count="1">0</b><span>Shared state graph</span></div>
+                <div class="stat"><b>∞</b><span>Persistent memory</span></div>
+            </div>
+        </section>
+
+        <!-- PLANNER -->
+        <section class="planner-card glass reveal" id="planner">
+
+            <div class="card-header">
+                <div>
+                    <h2>Where do you want to go?</h2>
+                    <p>Use the quick builder or just describe your dream trip in your own words.</p>
+                </div>
+                <button class="btn-small" id="newTripBtn" title="Start a fresh conversation thread">+ New trip</button>
+            </div>
+
+            <!-- Quick builder -->
+            <div class="builder">
+                <label class="field">
+                    <span>From</span>
+                    <input id="fromInput" type="text" placeholder="Chennai" value="Chennai">
+                </label>
+
+                <label class="field">
+                    <span>Destination</span>
+                    <input id="toInput" type="text" placeholder="Japan" value="Japan">
+                </label>
+
+                <div class="field">
+                    <span>Days</span>
+                    <div class="stepper">
+                        <button type="button" id="daysMinus" aria-label="Fewer days">−</button>
+                        <b id="daysValue">7</b>
+                        <button type="button" id="daysPlus" aria-label="More days">+</button>
+                    </div>
+                </div>
+
+                <label class="field">
+                    <span>Budget</span>
+                    <input id="budgetInput" type="text" placeholder="₹2,00,000" value="₹2,00,000">
+                </label>
+            </div>
+
+            <div class="chips-row">
+                <span class="chips-label">Travel style</span>
+                <div class="chips" id="styleChips">
+                    <button class="chip active" data-style="sightseeing">🏯 Sightseeing</button>
+                    <button class="chip" data-style="food">🍜 Food</button>
+                    <button class="chip" data-style="adventure">🏔️ Adventure</button>
+                    <button class="chip" data-style="relaxation">🏖️ Relaxation</button>
+                    <button class="chip" data-style="culture">🎎 Culture</button>
+                    <button class="chip" data-style="shopping">🛍️ Shopping</button>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="textarea-wrap">
+                    <textarea id="userInput" maxlength="600"
+                        placeholder="Plan a complete 7 days Japan trip including flights, hotels and sightseeing under 2 lakhs..."></textarea>
+                    <div class="textarea-foot">
+                        <span id="charCount">0 / 600</span>
+                        <span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to generate</span>
+                    </div>
+                </div>
+
+                <button id="sendBtn" class="send-btn">
+                    <span id="btnText">✨ Generate Plan</span>
+                    <span id="btnLoader" class="loader hidden"></span>
+                </button>
+            </div>
+
+            <div class="quick-prompts">
+                <span class="chips-label">Try one</span>
+                <button data-prompt="Plan a complete 7 days Japan trip from Bangladesh including flights, hotels and sightseeing under 2 lakhs.">🇯🇵 Japan Trip</button>
+                <button data-prompt="Plan a 5 days Dubai trip from Dhaka with flights, hotels and sightseeing.">🇦🇪 Dubai Trip</button>
+                <button data-prompt="Plan a 7 days Thailand trip from Bangladesh with budget hotels and sightseeing.">🇹🇭 Thailand Trip</button>
+                <button data-prompt="Give me all country flight info.">🌍 Global Flights</button>
+            </div>
+        </section>
+
+        <!-- LIVE AGENT PIPELINE -->
+        <section class="pipeline glass reveal" id="pipeline">
+            <div class="pipeline-head">
+                <h3>Live agent pipeline</h3>
+                <span class="pipeline-state" id="pipelineState">Idle — waiting for a request</span>
+            </div>
+
+            <div class="pipeline-steps">
+                <div class="p-step" data-step="0">
+                    <div class="p-icon">✈️</div>
+                    <div class="p-info"><b>Flight Agent</b><small>AviationStack · Tavily</small></div>
+                    <div class="p-status"></div>
+                </div>
+                <div class="p-line"></div>
+                <div class="p-step" data-step="1">
+                    <div class="p-icon">🏨</div>
+                    <div class="p-info"><b>Hotel Agent</b><small>Tavily · Google Places</small></div>
+                    <div class="p-status"></div>
+                </div>
+                <div class="p-line"></div>
+                <div class="p-step" data-step="2">
+                    <div class="p-icon">🗺️</div>
+                    <div class="p-info"><b>Itinerary Agent</b><small>Tavily · Google Maps</small></div>
+                    <div class="p-status"></div>
+                </div>
+                <div class="p-line"></div>
+                <div class="p-step" data-step="3">
+                    <div class="p-icon">💬</div>
+                    <div class="p-info"><b>Final Response</b><small>Groq · Llama 3</small></div>
+                    <div class="p-status"></div>
+                </div>
+            </div>
+
+            <div class="terminal" id="terminal" aria-live="polite">
+                <div class="term-line muted">$ tabigo --ready</div>
+            </div>
+        </section>
+
+        <!-- RESULT -->
+        <section id="resultSection" class="result-section glass hidden">
+
+            <div class="result-header">
+                <div>
+                    <h2>Your AI Travel Plan</h2>
+                    <p id="threadInfo">Thread ID: -</p>
+                </div>
+
+                <div class="result-actions">
+                    <button class="copy-btn" id="copyBtn">📋 Copy</button>
+                    <button class="print-btn" id="printBtn">🖨️ Print</button>
+                    <button class="download-btn" id="downloadBtn">⬇ Download PDF</button>
+                </div>
+            </div>
+
+            <div class="toc" id="toc"></div>
+
+            <div id="pdfContent" class="pdf-content">
+                <h1 class="pdf-title">TabiGo AI — Travel Plan</h1>
+                <div id="resultBox" class="result-box"></div>
+            </div>
+        </section>
+
+        <section id="errorBox" class="error-box hidden" role="alert"></section>
+
+        <!-- AGENTS -->
+        <section class="section" id="agents">
+            <div class="section-head reveal">
+                <span class="eyebrow">The crew</span>
+                <h2>Four agents. One seamless plan.</h2>
+                <p>Each agent owns a single responsibility and writes its output into a shared LangGraph state.</p>
+            </div>
+
+            <div class="agent-grid">
+                <article class="agent-card tilt reveal" style="--accent:#38bdf8">
+                    <div class="agent-num">01</div>
+                    <div class="agent-icon">✈️</div>
+                    <h3>Flight Agent</h3>
+                    <p>Searches flights and finds the best options for your route and budget.</p>
+                    <div class="tags"><span>AviationStack</span><span>Tavily</span></div>
+                </article>
+
+                <article class="agent-card tilt reveal" style="--accent:#22c55e">
+                    <div class="agent-num">02</div>
+                    <div class="agent-icon">🏨</div>
+                    <h3>Hotel Agent</h3>
+                    <p>Discovers stays near the action and compares them side by side.</p>
+                    <div class="tags"><span>Tavily</span><span>Google Places</span></div>
+                </article>
+
+                <article class="agent-card tilt reveal" style="--accent:#f59e0b">
+                    <div class="agent-num">03</div>
+                    <div class="agent-icon">🗺️</div>
+                    <h3>Itinerary Agent</h3>
+                    <p>Builds a day-wise plan with places to visit, activities and routes.</p>
+                    <div class="tags"><span>Tavily</span><span>Google Maps</span></div>
+                </article>
+
+                <article class="agent-card tilt reveal" style="--accent:#a78bfa">
+                    <div class="agent-num">04</div>
+                    <div class="agent-icon">💬</div>
+                    <h3>Final Response Agent</h3>
+                    <p>Combines every agent's output into one clean, readable travel plan.</p>
+                    <div class="tags"><span>Groq</span><span>Llama 3</span></div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ARCHITECTURE -->
+        <section class="section" id="architecture">
+            <div class="section-head reveal">
+                <span class="eyebrow">Under the hood</span>
+                <h2>Architecture you can click through</h2>
+                <p>Tap any node to see what it does in the LangGraph workflow.</p>
+            </div>
+
+            <div class="arch glass reveal">
+                <div class="arch-row">
+                    <button class="node" data-node="flight">✈️ Flight</button>
+                    <span class="arrow">➜</span>
+                    <button class="node" data-node="hotel">🏨 Hotel</button>
+                    <span class="arrow">➜</span>
+                    <button class="node" data-node="itinerary">🗺️ Itinerary</button>
+                    <span class="arrow">➜</span>
+                    <button class="node" data-node="final">💬 Final</button>
+                </div>
+
+                <div class="arch-down">▼ ▼ ▼ ▼</div>
+
+                <button class="node node-wide node-state" data-node="state">
+                    🧠 Shared State · <i>TravelState</i>
+                    <div class="state-keys">
+                        <code>user_query</code><code>flight_results</code><code>hotel_results</code>
+                        <code>itinerary</code><code>final_response</code><code>messages</code>
+                    </div>
+                </button>
+
+                <div class="arch-down">▼ ▲</div>
+
+                <button class="node node-wide node-db" data-node="db">🐘 PostgreSQL · Long-term memory</button>
+
+                <div class="node-detail" id="nodeDetail">
+                    <b>Select a node</b>
+                    <p>Click any block above to see its role, tools and what it writes to the shared state.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section class="section" id="history">
+            <div class="section-head reveal">
+                <span class="eyebrow">Your trips</span>
+                <h2>Recent plans</h2>
+                <p>Saved in this browser so you can reopen any plan instantly.</p>
+            </div>
+
+            <div class="history-grid" id="historyGrid"></div>
+            <div class="history-empty" id="historyEmpty">No plans yet — generate your first trip above ✈️</div>
+            <div class="history-actions"><button class="btn-small danger hidden" id="clearHistory">Clear history</button></div>
+        </section>
+
+        <!-- TECH STACK -->
+        <section class="stack reveal" aria-label="Tech stack">
+            <div class="marquee">
+                <div class="marquee-track">
+                    <span>FastAPI</span><span>LangGraph</span><span>Groq · Llama 3</span><span>PostgreSQL</span>
+                    <span>Tavily Search</span><span>AviationStack</span><span>Google Maps</span><span>Python</span>
+                    <span>FastAPI</span><span>LangGraph</span><span>Groq · Llama 3</span><span>PostgreSQL</span>
+                    <span>Tavily Search</span><span>AviationStack</span><span>Google Maps</span><span>Python</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-logo"><span class="logo-mark sm">旅</span> TabiGo AI</div>
+        <p>Built with FastAPI, LangGraph, Groq, PostgreSQL, Tavily and AviationStack</p>
+        <small>“Tabi” (旅) means journey in Japanese.</small>
+    </footer>
+
+    <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
