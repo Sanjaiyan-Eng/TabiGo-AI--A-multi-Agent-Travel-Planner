@@ -2,7 +2,8 @@
 
 Watch the demonstration of 🌏 Tabi-Go AI — Multi-Agent Travel Planner.
 
-▶ Watch the Demo Video on Google Drive(https://drive.google.com/file/d/1BVqZfRxz5orUepQR8GJEEaVh3C6zDPuw/view?usp=sharing)
+[▶ Watch the Demo Video on Google Drive](https://drive.google.com/file/d/1BVqZfRxz5orUepQR8GJEEaVh3C6zDPuw/view?usp=sharing)
+
 
 # 🌏 Tabi-Go AI — Multi-Agent Travel Planner
 
